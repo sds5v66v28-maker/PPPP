@@ -15,12 +15,12 @@ const EMOJIS = ['👍', '❤️', '😊', '🎉']
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return 'たった今'
+  if (mins < 60) return `${mins}分前`
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}時間前`
   const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return `${days}日前`
 }
 
 function getInitials(name: string | null | undefined, email: string | undefined) {
@@ -167,7 +167,7 @@ export default function CommentSection({ entityType, entityId, currentUserId }: 
       {/* Comments */}
       <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
         {comments.length === 0 && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No comments yet. Be the first!</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">まだコメントはありません。最初のコメントを書きましょう！</p>
         )}
         {comments.map(comment => {
           const author = profiles[comment.user_id]
@@ -195,7 +195,7 @@ export default function CommentSection({ entityType, entityId, currentUserId }: 
                       onClick={() => handleDeleteComment(comment.id)}
                       className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 flex-shrink-0"
                     >
-                      Delete
+                      削除
                     </button>
                   )}
                 </div>
@@ -212,7 +212,7 @@ export default function CommentSection({ entityType, entityId, currentUserId }: 
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
+          placeholder="コメントを入力..."
           className="flex-1 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
@@ -220,7 +220,7 @@ export default function CommentSection({ entityType, entityId, currentUserId }: 
           disabled={submitting || !newComment.trim()}
           className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send
+          送信
         </button>
       </form>
     </div>

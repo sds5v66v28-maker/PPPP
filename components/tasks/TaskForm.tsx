@@ -15,16 +15,16 @@ interface TaskFormProps {
 }
 
 const PRIORITIES: { value: Priority; label: string; color: string }[] = [
-  { value: 'high', label: 'High', color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700' },
-  { value: 'low', label: 'Low', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700' },
+  { value: 'high', label: '高', color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700' },
+  { value: 'medium', label: '中', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700' },
+  { value: 'low', label: '低', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700' },
 ]
 
 const RECURRENCES: { value: RecurrenceType; label: string }[] = [
-  { value: 'none', label: 'No repeat' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
+  { value: 'none', label: '繰り返しなし' },
+  { value: 'daily', label: '毎日' },
+  { value: 'weekly', label: '毎週' },
+  { value: 'monthly', label: '毎月' },
 ]
 
 export default function TaskForm({ task, groupId, currentUserId, members, onClose, onSaved }: TaskFormProps) {
@@ -75,7 +75,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {isEditing ? 'Edit Task' : 'New Task'}
+            {isEditing ? 'タスクを編集' : '新しいタスク'}
           </h2>
           <button
             onClick={onClose}
@@ -87,30 +87,30 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
 
         <form onSubmit={handleSave} className="px-5 py-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">タイトル *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Task title"
+              placeholder="タスクのタイトル"
               required
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">メモ</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add details..."
+              placeholder="詳細を入力..."
               rows={3}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Due Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">期限</label>
             <input
               type="date"
               value={dueDate}
@@ -120,7 +120,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">優先度</label>
             <div className="flex gap-2">
               {PRIORITIES.map(p => (
                 <button
@@ -138,13 +138,13 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Assign To</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">担当者</label>
             <select
               value={assignedTo}
               onChange={(e) => setAssignedTo(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Unassigned</option>
+              <option value="">未割り当て</option>
               {members.map(member => (
                 <option key={member.id} value={member.id}>
                   {member.full_name || member.email}
@@ -154,7 +154,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Repeat</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">繰り返し</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {RECURRENCES.map(r => (
                 <button
@@ -175,7 +175,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
 
           {recurrence !== 'none' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Repeat Until</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">繰り返し終了日</label>
               <input
                 type="date"
                 value={recurrenceEndDate}
@@ -191,14 +191,14 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
               onClick={onClose}
               className="flex-1 py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              キャンセル
             </button>
             <button
               type="submit"
               disabled={saving || !title.trim()}
               className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Task'}
+              {saving ? '保存中...' : isEditing ? '変更を保存' : 'タスクを作成'}
             </button>
           </div>
         </form>

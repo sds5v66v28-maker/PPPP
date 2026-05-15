@@ -19,7 +19,7 @@ interface CalendarViewProps {
 
 function formatTitle(date: Date, view: CalendarView): string {
   if (view === 'month') {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' })
   }
   if (view === 'week') {
     const start = new Date(date)
@@ -27,13 +27,9 @@ function formatTitle(date: Date, view: CalendarView): string {
     start.setDate(start.getDate() - day)
     const end = new Date(start)
     end.setDate(end.getDate() + 6)
-    const same = start.getMonth() === end.getMonth()
-    if (same) {
-      return `${start.toLocaleDateString('en-US', { month: 'long' })} ${start.getDate()}–${end.getDate()}, ${start.getFullYear()}`
-    }
-    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+    return `${start.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}〜${end.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}`
   }
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+  return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
 }
 
 function navigate(date: Date, view: CalendarView, direction: -1 | 1): Date {
@@ -115,8 +111,8 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
             onClick={() => setCurrentDate(new Date())}
             className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Today
-          </button>
+            今日
+</button>
           <div className="flex items-center">
             <button
               onClick={() => setCurrentDate(navigate(currentDate, view, -1))}
@@ -139,17 +135,17 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
         <div className="flex items-center gap-2">
           {/* View switcher */}
           <div className="flex rounded-xl border border-gray-300 dark:border-gray-600 overflow-hidden">
-            {(['month', 'week', 'day'] as CalendarView[]).map(v => (
+            {([['month', '月'], ['week', '週'], ['day', '日']] as [CalendarView, string][]).map(([v, label]) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                   view === v
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                {v}
+                {label}
               </button>
             ))}
           </div>
@@ -160,7 +156,7 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors"
           >
             <PlusIcon className="w-4 h-4" />
-            New Event
+            予定を追加
           </button>
         </div>
       </div>

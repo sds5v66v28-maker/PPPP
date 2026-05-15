@@ -93,7 +93,7 @@ export default function SettingsPage() {
     setSavingProfile(true)
     await supabase.from('profiles').update({ full_name: fullName, color: selectedColor }).eq('id', currentUserId)
     setSavingProfile(false)
-    showSuccess('Profile saved!')
+    showSuccess('プロフィールを保存しました！')
     fetchData()
   }
 
@@ -102,7 +102,7 @@ export default function SettingsPage() {
     setSavingGroup(true)
     await supabase.from('family_groups').update({ name: groupName }).eq('id', group.id)
     setSavingGroup(false)
-    showSuccess('Group name updated!')
+    showSuccess('グループ名を更新しました！')
     fetchData()
   }
 
@@ -133,7 +133,7 @@ export default function SettingsPage() {
       .single()
 
     if (err || !data) {
-      setError(err?.message || 'Failed to create group')
+      setError(err?.message || 'グループの作成に失敗しました')
       setCreatingGroup(false)
       return
     }
@@ -146,7 +146,7 @@ export default function SettingsPage() {
 
     setCreatingGroup(false)
     setNewGroupName('')
-    showSuccess('Family group created!')
+    showSuccess('グループを作成しました！')
     fetchData()
   }
 
@@ -162,7 +162,7 @@ export default function SettingsPage() {
       .single()
 
     if (groupErr || !groupData) {
-      setError('Invalid invite code. Please check and try again.')
+      setError('招待コードが正しくありません。確認して再度お試しください。')
       setJoiningGroup(false)
       return
     }
@@ -175,7 +175,7 @@ export default function SettingsPage() {
 
     if (joinErr) {
       if (joinErr.code === '23505') {
-        setError('You are already a member of this group.')
+        setError('すでにこのグループのメンバーです。')
       } else {
         setError(joinErr.message)
       }
@@ -185,7 +185,7 @@ export default function SettingsPage() {
 
     setJoiningGroup(false)
     setJoinCode('')
-    showSuccess('Joined group successfully!')
+    showSuccess('グループに参加しました！')
     fetchData()
   }
 
@@ -200,13 +200,13 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">設定</h1>
 
       {/* Notifications */}
       {error && (
         <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
           {error}
-          <button onClick={() => setError(null)} className="ml-2 underline">Dismiss</button>
+          <button onClick={() => setError(null)} className="ml-2 underline">閉じる</button>
         </div>
       )}
       {successMsg && (
@@ -217,7 +217,7 @@ export default function SettingsPage() {
 
       {/* Profile Section */}
       <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Your Profile</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">プロフィール</h2>
 
         <div className="flex items-center gap-4 mb-4">
           <div
@@ -228,24 +228,24 @@ export default function SettingsPage() {
           </div>
           <div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">{profile?.email}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Your avatar uses your chosen color</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">アバターには選択した色が使われます</div>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">氏名</label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your name"
+              placeholder="お名前"
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Color</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">カラー</label>
             <div className="flex gap-2 flex-wrap">
               {COLORS.map(c => (
                 <button
@@ -265,7 +265,7 @@ export default function SettingsPage() {
             disabled={savingProfile}
             className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50"
           >
-            {savingProfile ? 'Saving...' : 'Save Profile'}
+            {savingProfile ? '保存中...' : 'プロフィールを保存'}
           </button>
         </div>
       </section>
@@ -275,12 +275,12 @@ export default function SettingsPage() {
         <>
           {/* Group Info */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Family Group</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">ファミリーグループ</h2>
 
             {isAdmin ? (
               <div className="space-y-3 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Group Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">グループ名</label>
                   <input
                     type="text"
                     value={groupName}
@@ -293,19 +293,19 @@ export default function SettingsPage() {
                   disabled={savingGroup}
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
                 >
-                  {savingGroup ? 'Saving...' : 'Save Name'}
+                  {savingGroup ? '保存中...' : '名前を保存'}
                 </button>
               </div>
             ) : (
               <div className="mb-4">
-                <div className="text-sm text-gray-500 dark:text-gray-400">Group name</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">グループ名</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</div>
               </div>
             )}
 
             {/* Invite Code */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invite Code</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">招待コード</div>
               <div className="flex items-center gap-2 mb-3">
                 <code className="flex-1 text-2xl font-mono font-bold text-gray-900 dark:text-white tracking-widest text-center bg-white dark:bg-gray-700 py-2 px-4 rounded-xl border border-gray-200 dark:border-gray-600">
                   {group.invite_code}
@@ -321,14 +321,14 @@ export default function SettingsPage() {
                 onClick={handleCopyInviteLink}
                 className="w-full py-2 px-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
               >
-                {copied ? '✓ Copied!' : 'Copy Invite Link'}
+                {copied ? '✓ コピーしました！' : '招待リンクをコピー'}
               </button>
             </div>
           </section>
 
           {/* Members */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Members ({members.length})</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">メンバー ({members.length}人)</h2>
             <div className="space-y-3">
               {members.map(member => {
                 const p = member.profile
@@ -349,13 +349,13 @@ export default function SettingsPage() {
                           {p.full_name || p.email}
                         </span>
                         {isMe && (
-                          <span className="text-xs text-gray-400 dark:text-gray-500">(you)</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">（あなた）</span>
                         )}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {p.full_name ? p.email : ''}{' '}
                         <span className={`font-medium ${member.role === 'admin' ? 'text-blue-500' : 'text-gray-400'}`}>
-                          {member.role}
+                          {member.role === 'admin' ? '管理者' : 'メンバー'}
                         </span>
                       </div>
                     </div>
@@ -377,23 +377,23 @@ export default function SettingsPage() {
       ) : (
         /* No group - create or join */
         <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Family Group</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">ファミリーグループ</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Create a new family group or join an existing one with an invite code.
+            新しいグループを作成するか、招待コードで既存のグループに参加できます。
           </p>
 
           {/* Create Group */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               <PlusIcon className="w-4 h-4" />
-              Create a Family Group
+              グループを作成
             </h3>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="The Smiths"
+                placeholder="例：田中家"
                 className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -401,7 +401,7 @@ export default function SettingsPage() {
                 disabled={creatingGroup || !newGroupName.trim()}
                 className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 whitespace-nowrap"
               >
-                {creatingGroup ? 'Creating...' : 'Create'}
+                {creatingGroup ? '作成中...' : '作成'}
               </button>
             </div>
           </div>
@@ -411,7 +411,7 @@ export default function SettingsPage() {
               <div className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-white dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400">or</span>
+              <span className="px-3 bg-white dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400">または</span>
             </div>
           </div>
 
@@ -419,7 +419,7 @@ export default function SettingsPage() {
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               <LogInIcon className="w-4 h-4" />
-              Join with Invite Code
+              招待コードで参加
             </h3>
             <div className="flex gap-2">
               <input
@@ -435,7 +435,7 @@ export default function SettingsPage() {
                 disabled={joiningGroup || joinCode.length < 4}
                 className="px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors disabled:opacity-50 whitespace-nowrap"
               >
-                {joiningGroup ? 'Joining...' : 'Join'}
+                {joiningGroup ? '参加中...' : '参加'}
               </button>
             </div>
           </div>

@@ -42,7 +42,7 @@ export default function LoginPage() {
             <span className="text-2xl">🏠</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FamiTask</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back! Sign in to your family.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">おかえりなさい！ファミリーにサインインしてください。</p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
@@ -68,7 +68,7 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            Googleで続ける
           </button>
 
           <div className="relative mb-6">
@@ -77,7 +77,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                or sign in with email
+                またはメールでサインイン
               </span>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email
+                メールアドレス
               </label>
               <input
                 type="email"
@@ -105,7 +105,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
+                パスワード
               </label>
               <input
                 type="password"
@@ -122,14 +122,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'サインイン中...' : 'サインイン'}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            Don&apos;t have an account?{' '}
+            アカウントをお持ちでないですか？{' '}
             <Link href="/signup" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-              Sign up
+              新規登録
             </Link>
           </p>
         </div>

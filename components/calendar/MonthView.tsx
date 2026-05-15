@@ -44,7 +44,7 @@ function isCurrentMonth(date: Date, currentDate: Date) {
   return date.getMonth() === currentDate.getMonth() && date.getFullYear() === currentDate.getFullYear()
 }
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
 export default function MonthView({ currentDate, events, tasks, onDayClick, onEventClick, onTaskClick }: MonthViewProps) {
   const days = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth())
@@ -129,7 +129,7 @@ export default function MonthView({ currentDate, events, tasks, onDayClick, onEv
                 ))}
                 {overflow > 0 && (
                   <div className="text-xs text-gray-500 dark:text-gray-400 px-1.5">
-                    +{overflow} more
+                    他{overflow}件
                   </div>
                 )}
               </div>

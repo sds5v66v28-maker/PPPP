@@ -51,9 +51,9 @@ export default function Navigation({ profile, group }: NavigationProps) {
   }
 
   const navItems = [
-    { href: '/calendar', label: 'Calendar', icon: CalendarIcon },
-    { href: '/tasks', label: 'Tasks', icon: CheckSquareIcon },
-    { href: '/settings', label: 'Settings', icon: SettingsIcon },
+    { href: '/calendar', label: 'カレンダー', icon: CalendarIcon },
+    { href: '/tasks', label: 'タスク', icon: CheckSquareIcon },
+    { href: '/settings', label: '設定', icon: SettingsIcon },
   ]
 
   const initials = getInitials(profile?.full_name, profile?.email)
@@ -104,14 +104,14 @@ export default function Navigation({ profile, group }: NavigationProps) {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors w-full text-left"
           >
             {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-            {dark ? 'Light Mode' : 'Dark Mode'}
+            {dark ? 'ライトモード' : 'ダークモード'}
           </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors w-full text-left"
           >
             <LogOutIcon className="w-5 h-5" />
-            Sign Out
+            ログアウト
           </button>
 
           {/* User avatar */}
@@ -158,7 +158,7 @@ export default function Navigation({ profile, group }: NavigationProps) {
           className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 text-xs font-medium text-gray-500 dark:text-gray-400"
         >
           {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-          {dark ? 'Light' : 'Dark'}
+          {dark ? '明るい' : '暗い'}
         </button>
       </nav>
     </>

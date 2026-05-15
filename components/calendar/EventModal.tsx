@@ -113,7 +113,7 @@ export default function EventModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {mode === 'view' ? 'Event Details' : isEditing ? 'Edit Event' : 'New Event'}
+            {mode === 'view' ? '予定の詳細' : isEditing ? '予定を編集' : '新しい予定'}
           </h2>
           <div className="flex items-center gap-2">
             {mode === 'view' && event?.created_by === currentUserId && (
@@ -160,8 +160,8 @@ export default function EventModal({
                 <CalendarIcon className="w-4 h-4 flex-shrink-0" />
                 <span>
                   {event.all_day
-                    ? new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-                    : `${new Date(event.start_time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} – ${new Date(event.end_time).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+                    ? new Date(event.start_time).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                    : `${new Date(event.start_time).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 〜 ${new Date(event.end_time).toLocaleString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`
                   }
                 </span>
               </div>
@@ -181,7 +181,7 @@ export default function EventModal({
                   >
                     {(creator.full_name?.[0] || creator.email[0]).toUpperCase()}
                   </div>
-                  <span>Created by {creator.full_name || creator.email}</span>
+                  <span>作成者：{creator.full_name || creator.email}</span>
                 </div>
               )}
 
@@ -195,22 +195,22 @@ export default function EventModal({
             <>
               {/* Edit / Create mode */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">タイトル *</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Event title"
+                  placeholder="例：誕生日パーティー"
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">メモ</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Add details..."
+                  placeholder="詳細を入力..."
                   rows={3}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
@@ -224,12 +224,12 @@ export default function EventModal({
                   onChange={(e) => setAllDay(e.target.checked)}
                   className="w-4 h-4 rounded accent-blue-600"
                 />
-                <label htmlFor="allDay" className="text-sm font-medium text-gray-700 dark:text-gray-300">All day</label>
+                <label htmlFor="allDay" className="text-sm font-medium text-gray-700 dark:text-gray-300">終日</label>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Start</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">開始</label>
                   <input
                     type={allDay ? 'date' : 'datetime-local'}
                     value={allDay ? startTime.slice(0, 10) : startTime}
@@ -238,7 +238,7 @@ export default function EventModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">End</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">終了</label>
                   <input
                     type={allDay ? 'date' : 'datetime-local'}
                     value={allDay ? endTime.slice(0, 10) : endTime}
@@ -249,18 +249,18 @@ export default function EventModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">場所</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Add a location..."
+                  placeholder="場所を入力..."
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">色</label>
                 <div className="flex gap-2 flex-wrap">
                   {COLORS.map(c => (
                     <button
@@ -286,7 +286,7 @@ export default function EventModal({
                 onClick={() => setMode('view')}
                 className="flex-1 py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Cancel
+                キャンセル
               </button>
             )}
             <button
@@ -294,7 +294,7 @@ export default function EventModal({
               disabled={saving || !title.trim()}
               className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Event'}
+              {saving ? '保存中...' : isEditing ? '変更を保存' : '予定を作成'}
             </button>
           </div>
         )}

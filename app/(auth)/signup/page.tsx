@@ -52,15 +52,15 @@ export default function SignupPage() {
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✉️</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">メールを確認してください</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+              確認リンクを <strong>{email}</strong> に送りました。リンクをクリックしてアカウントを有効化してください。
             </p>
             <Link
               href="/login"
               className="inline-block px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
             >
-              Back to Login
+              ログイン画面に戻る
             </Link>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function SignupPage() {
             <span className="text-2xl">🏠</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FamiTask</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Create your family account.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">ファミリーアカウントを作成しましょう。</p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
@@ -90,7 +90,7 @@ export default function SignupPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Continue with Google
+            Googleで続ける
           </button>
 
           <div className="relative mb-6">
@@ -99,7 +99,7 @@ export default function SignupPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                or sign up with email
+                またはメールで新規登録
               </span>
             </div>
           </div>
@@ -113,13 +113,13 @@ export default function SignupPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Full Name
+                氏名
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jane Doe"
+                placeholder="山田 太郎"
                 required
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
@@ -127,7 +127,7 @@ export default function SignupPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email
+                メールアドレス
               </label>
               <input
                 type="email"
@@ -141,7 +141,7 @@ export default function SignupPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
+                パスワード
               </label>
               <input
                 type="password"
@@ -152,7 +152,7 @@ export default function SignupPage() {
                 minLength={6}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">At least 6 characters</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">6文字以上</p>
             </div>
 
             <button
@@ -160,14 +160,14 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'アカウント作成中...' : 'アカウントを作成'}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            Already have an account?{' '}
+            すでにアカウントをお持ちですか？{' '}
             <Link href="/login" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-              Sign in
+              サインイン
             </Link>
           </p>
         </div>

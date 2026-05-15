@@ -20,9 +20,9 @@ const PRIORITY_COLORS = {
 }
 
 const PRIORITY_LABELS = {
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
+  high: '高',
+  medium: '中',
+  low: '低',
 }
 
 function formatDate(dateStr: string | null) {
@@ -32,12 +32,12 @@ function formatDate(dateStr: string | null) {
   today.setHours(0, 0, 0, 0)
   const diff = Math.floor((d.getTime() - today.getTime()) / 86400000)
 
-  if (diff === 0) return { label: 'Today', overdue: false }
-  if (diff === 1) return { label: 'Tomorrow', overdue: false }
-  if (diff === -1) return { label: 'Yesterday', overdue: true }
-  if (diff < 0) return { label: `${Math.abs(diff)}d overdue`, overdue: true }
-  if (diff < 7) return { label: d.toLocaleDateString('en-US', { weekday: 'short' }), overdue: false }
-  return { label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), overdue: false }
+  if (diff === 0) return { label: '今日', overdue: false }
+  if (diff === 1) return { label: '明日', overdue: false }
+  if (diff === -1) return { label: '昨日', overdue: true }
+  if (diff < 0) return { label: `${Math.abs(diff)}日超過`, overdue: true }
+  if (diff < 7) return { label: d.toLocaleDateString('ja-JP', { weekday: 'short' }), overdue: false }
+  return { label: d.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }), overdue: false }
 }
 
 export default function TaskItem({ task, currentUserId, memberProfiles, onEdit, onRefresh }: TaskItemProps) {
