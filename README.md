@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FamiTask - ファミリー向けタスク＆カレンダー共有アプリ
 
-## Getting Started
+家族みんなで予定・タスクを共有できるアプリです。カレンダービュー、タスク管理、リアルタイム同期に対応しています。
 
-First, run the development server:
+## 機能
+
+- **認証** — メール/パスワード + Google OAuth（Supabase Auth）
+- **ファミリーグループ** — グループ作成・招待リンクによるメンバー追加
+- **カレンダー** — 月/週/日ビュー切り替え、予定とタスクを色分け表示
+- **タスク管理** — 優先度・期限・担当者・繰り返し設定
+- **コメント＆リアクション** — 予定・タスクにコメント追加、👍などの絵文字リアクション
+- **リアルタイム同期** — Supabase Realtimeで全員の画面を即時更新
+- **ダークモード** — OS設定連動 + 手動切り替え
+- **レスポンシブ** — スマホ（ボトムナビ）/ PC（サイドバー）対応
+
+## セットアップ手順
+
+### 1. Supabaseプロジェクトの設定
+
+1. [Supabase](https://supabase.com) にアクセスしてプロジェクトを作成（または既存のものを使用）
+2. **SQL Editor** を開き、`supabase/migrations/001_initial.sql` の内容を貼り付けて実行
+3. **Project Settings → API** から以下をコピー：
+   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
+   - `anon (public)` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### 2. Google OAuth の設定（任意）
+
+1. Supabase ダッシュボード → **Authentication → Providers → Google** を有効化
+2. Google Cloud Console でOAuthクライアントIDを作成
+3. 承認済みリダイレクトURIに `https://<your-supabase-project>.supabase.co/auth/v1/callback` を追加
+4. クライアントID/シークレットをSupabaseに設定
+
+### 3. 環境変数の設定
+
+```bash
+cp .env.local.example .env.local
+```
+
+`.env.local` を編集して実際の値を設定：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 4. 依存パッケージのインストール
+
+```bash
+npm install
+```
+
+### 5. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開きます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Vercelへのデプロイ
 
-## Learn More
+1. GitHubにリポジトリをプッシュ
+2. [Vercel](https://vercel.com) でプロジェクトをインポート
+3. **Environment Variables** に以下を追加：
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. デプロイ後、Supabase → **Authentication → URL Configuration** の `Site URL` とリダイレクトURLをVercelのURLに更新
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## DBスキーマ（概要）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| テーブル | 説明 |
+|---|---|
+| `profiles` | ユーザープロフィール（auth.usersに連動） |
+| `family_groups` | ファミリーグループ |
+| `family_members` | グループメンバーシップ |
+| `events` | カレンダー予定 |
+| `tasks` | タスク（繰り返し対応） |
+| `comments` | 予定・タスクへのコメント |
+| `reactions` | 絵文字リアクション |
 
-## Deploy on Vercel
+全テーブルにRow Level Security（RLS）が有効で、グループメンバーのみがデータにアクセスできます。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 技術スタック
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **フロントエンド**: Next.js 16 (App Router) + TypeScript
+- **スタイリング**: Tailwind CSS v4
+- **バックエンド/DB**: Supabase（PostgreSQL + Realtime + Auth）
+- **デプロイ**: Vercel
