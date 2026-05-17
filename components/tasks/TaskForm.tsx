@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Task, Profile, Priority, RecurrenceType } from '@/types'
-import { XIcon } from 'lucide-react'
+import { XIcon, SparklesIcon } from 'lucide-react'
+import { parseJapaneseDate } from '@/lib/utils/parseJapaneseDate'
 
 interface TaskFormProps {
   task?: Task | null
   groupId: string
   currentUserId: string
   members: Profile[]
+  existingSections: string[]
   onClose: () => void
   onSaved: () => void
 }
@@ -27,18 +29,33 @@ const RECURRENCES: { value: RecurrenceType; label: string }[] = [
   { value: 'monthly', label: '毎月' },
 ]
 
-export default function TaskForm({ task, groupId, currentUserId, members, onClose, onSaved }: TaskFormProps) {
+export default function TaskForm({ task, groupId, currentUserId, members, existingSections, onClose, onSaved }: TaskFormProps) {
   const isEditing = !!task
   const supabase = createClient()
 
   const [title, setTitle] = useState(task?.title || '')
   const [description, setDescription] = useState(task?.description || '')
   const [dueDate, setDueDate] = useState(task?.due_date || '')
+  const [dueTime, setDueTime] = useState(task?.due_time || '')
+  const [smartInput, setSmartInput] = useState('')
+  const [smartPreview, setSmartPreview] = useState('')
   const [priority, setPriority] = useState<Priority>(task?.priority || 'medium')
   const [assignedTo, setAssignedTo] = useState(task?.assigned_to || '')
   const [recurrence, setRecurrence] = useState<RecurrenceType>(task?.recurrence || 'none')
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(task?.recurrence_end_date || '')
+  const [section, setSection] = useState(task?.section || '')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!smartInput) {
+      setSmartPreview('')
+      return
+    }
+    const parsed = parseJapaneseDate(smartInput)
+    setSmartPreview(parsed.display)
+    if (parsed.date) setDueDate(parsed.date)
+    if (parsed.time) setDueTime(parsed.time)
+  }, [smartInput])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,10 +66,12 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate || null,
+      due_time: dueTime || null,
       priority,
       assigned_to: assignedTo || null,
       recurrence,
       recurrence_end_date: recurrenceEndDate || null,
+      section: section.trim() || null,
       group_id: groupId,
       created_by: currentUserId,
     }
@@ -86,6 +105,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
         </div>
 
         <form onSubmit={handleSave} className="px-5 py-4 space-y-4">
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">タイトル *</label>
             <input
@@ -98,27 +118,85 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
             />
           </div>
 
+          {/* Smart date input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+              <SparklesIcon className="w-4 h-4 text-blue-500" />
+              スマート日時入力
+            </label>
+            <input
+              type="text"
+              value={smartInput}
+              onChange={(e) => setSmartInput(e.target.value)}
+              placeholder="今日、明日、来週月曜、5/20 午後3時..."
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {smartPreview && (
+              <p className="mt-1.5 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                <span>→</span>
+                <span>{smartPreview}</span>
+              </p>
+            )}
+            {smartInput && !smartPreview && (
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">認識できませんでした</p>
+            )}
+          </div>
+
+          {/* Due date + time (manual) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">期日</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">時刻</label>
+              <input
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">グループ</label>
+            <input
+              type="text"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              placeholder="仕事、家事、買い物..."
+              list="section-list"
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {existingSections.length > 0 && (
+              <datalist id="section-list">
+                {existingSections.map(s => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            )}
+          </div>
+
+          {/* Memo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">メモ</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="詳細を入力..."
-              rows={3}
+              rows={2}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">期限</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
+          {/* Priority */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">優先度</label>
             <div className="flex gap-2">
@@ -137,22 +215,26 @@ export default function TaskForm({ task, groupId, currentUserId, members, onClos
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">担当者</label>
-            <select
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">未割り当て</option>
-              {members.map(member => (
-                <option key={member.id} value={member.id}>
-                  {member.full_name || member.email}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Assignee */}
+          {members.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">担当者</label>
+              <select
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">未割り当て</option>
+                {members.map(member => (
+                  <option key={member.id} value={member.id}>
+                    {member.full_name || member.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
+          {/* Recurrence */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">繰り返し</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

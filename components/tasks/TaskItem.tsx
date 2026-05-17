@@ -107,12 +107,12 @@ export default function TaskItem({ task, currentUserId, memberProfiles, onEdit, 
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{task.description}</p>
         )}
 
-        <div className="flex items-center gap-3 mt-1.5">
+        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
           {dueDateInfo && (
             <span className={`text-xs font-medium ${
               dueDateInfo.overdue ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
             }`}>
-              📅 {dueDateInfo.label}
+              📅 {dueDateInfo.label}{task.due_time ? ` ${task.due_time}` : ''}
             </span>
           )}
 
@@ -121,6 +121,12 @@ export default function TaskItem({ task, currentUserId, memberProfiles, onEdit, 
           }`}>
             {PRIORITY_LABELS[task.priority]}
           </span>
+
+          {task.section && (
+            <span className="text-xs px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+              {task.section}
+            </span>
+          )}
         </div>
       </div>
 

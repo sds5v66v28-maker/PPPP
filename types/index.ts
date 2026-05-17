@@ -54,11 +54,13 @@ export interface Task {
   title: string
   description: string | null
   due_date: string | null
+  due_time: string | null
   priority: Priority
   completed: boolean
   completed_at: string | null
   recurrence: RecurrenceType
   recurrence_end_date: string | null
+  section: string | null
   created_at: string
   updated_at: string
   creator?: Profile

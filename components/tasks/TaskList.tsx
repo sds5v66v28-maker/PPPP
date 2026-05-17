@@ -6,7 +6,7 @@ import type { Task, Profile, FamilyMember } from '@/types'
 import TaskItem from './TaskItem'
 import TaskForm from './TaskForm'
 import CommentSection from '@/components/comments/CommentSection'
-import { PlusIcon, XIcon, FilterIcon, TrashIcon } from 'lucide-react'
+import { PlusIcon, XIcon, FilterIcon, TrashIcon, CalendarIcon, LayersIcon } from 'lucide-react'
 
 interface TaskListProps {
   initialTasks: Task[]
@@ -16,6 +16,9 @@ interface TaskListProps {
 }
 
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'
+type ViewMode = 'date' | 'section'
+
+const UNCATEGORIZED = 'グループなし'
 
 export default function TaskList({ initialTasks, groupId, currentUserId, members }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
@@ -26,6 +29,7 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all')
   const [filterAssignee, setFilterAssignee] = useState('')
   const [showCompleted, setShowCompleted] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('date')
   const supabase = createClient()
 
   const fetchTasks = async () => {
@@ -80,20 +84,45 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
   const activeTasks = tasks.filter(t => !t.completed)
   const completedTasks = tasks.filter(t => t.completed)
 
-  const applyFilters = (list: Task[]) => {
-    return list.filter(t => {
+  const applyFilters = (list: Task[]) =>
+    list.filter(t => {
       if (filterPriority !== 'all' && t.priority !== filterPriority) return false
       if (filterAssignee && t.assigned_to !== filterAssignee) return false
       return true
     })
-  }
 
+  // Date-based groups
   const todayTasks = applyFilters(activeTasks.filter(t => t.due_date === today))
   const upcomingTasks = applyFilters(activeTasks.filter(t => !t.due_date || t.due_date > today))
   const overdueTasks = applyFilters(activeTasks.filter(t => t.due_date && t.due_date < today))
   const filteredCompleted = applyFilters(completedTasks)
 
+  // Section-based groups
+  const existingSections = [...new Set(tasks.map(t => t.section).filter(Boolean))] as string[]
+
+  const sectionGroups: Record<string, Task[]> = {}
+  applyFilters(activeTasks).forEach(task => {
+    const key = task.section || UNCATEGORIZED
+    if (!sectionGroups[key]) sectionGroups[key] = []
+    sectionGroups[key].push(task)
+  })
+  const sortedSectionKeys = [
+    ...existingSections.filter(s => sectionGroups[s]),
+    ...(sectionGroups[UNCATEGORIZED] ? [UNCATEGORIZED] : []),
+  ]
+
   const memberProfileList = Object.values(memberProfiles)
+
+  const renderTaskItem = (task: Task) => (
+    <TaskItem
+      key={task.id}
+      task={task}
+      currentUserId={currentUserId}
+      memberProfiles={memberProfiles}
+      onEdit={(t) => { setDetailTask(t) }}
+      onRefresh={fetchTasks}
+    />
+  )
 
   return (
     <div className="h-full flex flex-col">
@@ -101,13 +130,33 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">タスク</h1>
-          <button
-            onClick={() => { setEditingTask(null); setShowForm(true) }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors"
-          >
-            <PlusIcon className="w-4 h-4" />
-            タスクを追加
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex rounded-xl border border-gray-300 dark:border-gray-600 overflow-hidden">
+              <button
+                onClick={() => setViewMode('date')}
+                title="日付別"
+                className={`p-1.5 transition-colors ${viewMode === 'date' ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              >
+                <CalendarIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('section')}
+                title="グループ別"
+                className={`p-1.5 transition-colors ${viewMode === 'section' ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              >
+                <LayersIcon className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => { setEditingTask(null); setShowForm(true) }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors"
+            >
+              <PlusIcon className="w-4 h-4" />
+              タスクを追加
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -149,110 +198,121 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
 
       {/* Task lists */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-        {/* Overdue */}
-        {overdueTasks.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-              期限超過 ({overdueTasks.length})
-            </h2>
-            <div className="space-y-2">
-              {overdueTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  currentUserId={currentUserId}
-                  memberProfiles={memberProfiles}
-                  onEdit={(t) => { setDetailTask(t) }}
-                  onRefresh={fetchTasks}
-                />
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Today */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-            今日 {todayTasks.length > 0 && `(${todayTasks.length})`}
-          </h2>
-          {todayTasks.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-3">
-              今日のタスクはありません 🎉
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {todayTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  currentUserId={currentUserId}
-                  memberProfiles={memberProfiles}
-                  onEdit={(t) => { setDetailTask(t) }}
-                  onRefresh={fetchTasks}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Upcoming */}
-        {upcomingTasks.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
-              今後 ({upcomingTasks.length})
-            </h2>
-            <div className="space-y-2">
-              {upcomingTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  currentUserId={currentUserId}
-                  memberProfiles={memberProfiles}
-                  onEdit={(t) => { setDetailTask(t) }}
-                  onRefresh={fetchTasks}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Completed */}
-        {filteredCompleted.length > 0 && (
-          <section>
-            <button
-              onClick={() => setShowCompleted(!showCompleted)}
-              className="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />
-              完了済み ({filteredCompleted.length})
-              <span className="ml-1">{showCompleted ? '▲' : '▼'}</span>
-            </button>
-            {showCompleted && (
-              <div className="space-y-2">
-                {filteredCompleted.map(task => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    currentUserId={currentUserId}
-                    memberProfiles={memberProfiles}
-                    onEdit={(t) => { setDetailTask(t) }}
-                    onRefresh={fetchTasks}
-                  />
-                ))}
+        {/* ── グループ別ビュー ── */}
+        {viewMode === 'section' && (
+          <>
+            {sortedSectionKeys.length === 0 && activeTasks.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-5xl mb-3">✅</div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">タスクがありません</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">最初のタスクを作成しましょう！</p>
               </div>
             )}
-          </section>
+
+            {sortedSectionKeys.map(key => (
+              <section key={key}>
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <LayersIcon className="w-4 h-4 text-blue-500" />
+                  {key}
+                  <span className="text-gray-400 font-normal">({sectionGroups[key].length})</span>
+                </h2>
+                <div className="space-y-2">
+                  {sectionGroups[key].map(renderTaskItem)}
+                </div>
+              </section>
+            ))}
+
+            {/* 完了済み（グループ別） */}
+            {filteredCompleted.length > 0 && (
+              <section>
+                <button
+                  onClick={() => setShowCompleted(!showCompleted)}
+                  className="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />
+                  完了済み ({filteredCompleted.length})
+                  <span className="ml-1">{showCompleted ? '▲' : '▼'}</span>
+                </button>
+                {showCompleted && (
+                  <div className="space-y-2">
+                    {filteredCompleted.map(renderTaskItem)}
+                  </div>
+                )}
+              </section>
+            )}
+          </>
         )}
 
-        {tasks.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-5xl mb-3">✅</div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">タスクがありません</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">最初のタスクを作成しましょう！</p>
-          </div>
+        {/* ── 日付別ビュー ── */}
+        {viewMode === 'date' && (
+          <>
+            {overdueTasks.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                  期限超過 ({overdueTasks.length})
+                </h2>
+                <div className="space-y-2">
+                  {overdueTasks.map(renderTaskItem)}
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                今日 {todayTasks.length > 0 && `(${todayTasks.length})`}
+              </h2>
+              {todayTasks.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-3">
+                  今日のタスクはありません 🎉
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {todayTasks.map(renderTaskItem)}
+                </div>
+              )}
+            </section>
+
+            {upcomingTasks.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
+                  今後 ({upcomingTasks.length})
+                </h2>
+                <div className="space-y-2">
+                  {upcomingTasks.map(renderTaskItem)}
+                </div>
+              </section>
+            )}
+
+            {filteredCompleted.length > 0 && (
+              <section>
+                <button
+                  onClick={() => setShowCompleted(!showCompleted)}
+                  className="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />
+                  完了済み ({filteredCompleted.length})
+                  <span className="ml-1">{showCompleted ? '▲' : '▼'}</span>
+                </button>
+                {showCompleted && (
+                  <div className="space-y-2">
+                    {filteredCompleted.map(renderTaskItem)}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {tasks.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-5xl mb-3">✅</div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">タスクがありません</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">最初のタスクを作成しましょう！</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -271,6 +331,7 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
           groupId={groupId}
           currentUserId={currentUserId}
           members={memberProfileList}
+          existingSections={existingSections}
           onClose={() => { setShowForm(false); setEditingTask(null) }}
           onSaved={() => { setShowForm(false); setEditingTask(null); fetchTasks() }}
         />
@@ -314,24 +375,32 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
                 <div className={`w-1.5 h-full min-h-[40px] rounded-full flex-shrink-0 ${
                   detailTask.priority === 'high' ? 'bg-red-500' : detailTask.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                 }`} />
-                <div>
+                <div className="flex-1 min-w-0">
                   <h3 className={`text-xl font-bold ${detailTask.completed ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
                     {detailTask.title}
                   </h3>
+                  {detailTask.section && (
+                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                      {detailTask.section}
+                    </span>
+                  )}
                   {detailTask.description && (
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">{detailTask.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">{detailTask.description}</p>
                   )}
                   <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400">
                     {detailTask.due_date && (
-                      <span>📅 Due {new Date(detailTask.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span>
+                        📅 {new Date(detailTask.due_date + 'T00:00:00').toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {detailTask.due_time && ` ${detailTask.due_time}`}
+                      </span>
                     )}
                     <span className={`font-medium ${
                       detailTask.priority === 'high' ? 'text-red-500' : detailTask.priority === 'medium' ? 'text-yellow-500' : 'text-green-600'
                     }`}>
-                      {detailTask.priority.charAt(0).toUpperCase() + detailTask.priority.slice(1)} priority
+                      {detailTask.priority === 'high' ? '高優先度' : detailTask.priority === 'medium' ? '中優先度' : '低優先度'}
                     </span>
                     {detailTask.recurrence !== 'none' && (
-                      <span>🔄 繰り返し：{detailTask.recurrence === 'daily' ? '毎日' : detailTask.recurrence === 'weekly' ? '毎週' : '毎月'}</span>
+                      <span>🔄 {detailTask.recurrence === 'daily' ? '毎日' : detailTask.recurrence === 'weekly' ? '毎週' : '毎月'}繰り返し</span>
                     )}
                     {detailTask.assigned_to && memberProfiles[detailTask.assigned_to] && (
                       <span>👤 {memberProfiles[detailTask.assigned_to].full_name || memberProfiles[detailTask.assigned_to].email}</span>
