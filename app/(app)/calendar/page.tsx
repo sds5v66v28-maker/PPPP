@@ -1,24 +1,35 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import CalendarView from '@/components/calendar/CalendarView'
-import { ensureGroup } from '@/lib/supabase/ensure-group'
+import { getSupabaseClient, getCurrentUser, getGroupId } from '@/lib/supabase/cached'
 import type { Event, Task, FamilyMember } from '@/types'
 
 export default async function CalendarPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
-  const groupId = await ensureGroup(supabase, user.id)
+  // Both calls reuse the cached results from layout — no extra DB round trips
+  const [groupId, supabase] = await Promise.all([
+    getGroupId(user.id),
+    getSupabaseClient(),
+  ])
+
+  // Limit events to ±2 months around today to reduce payload
+  const now = new Date()
+  const rangeStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString()
+  const rangeEnd   = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString()
 
   const [events, tasks, members] = groupId
     ? await Promise.all([
-        supabase.from('events').select('*').eq('group_id', groupId).order('start_time').then(r => r.data),
-        supabase.from('tasks').select('*').eq('group_id', groupId).order('due_date').then(r => r.data),
-        supabase.from('family_members').select('*').eq('group_id', groupId).then(r => r.data),
+        supabase.from('events').select('*').eq('group_id', groupId)
+          .gte('start_time', rangeStart)
+          .lte('start_time', rangeEnd)
+          .order('start_time')
+          .then(r => r.data),
+        supabase.from('tasks').select('*').eq('group_id', groupId)
+          .order('due_date')
+          .then(r => r.data),
+        supabase.from('family_members').select('*').eq('group_id', groupId)
+          .then(r => r.data),
       ])
     : [[], [], []]
 

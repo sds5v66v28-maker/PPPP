@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navigation from '@/components/Navigation'
+import { getSupabaseClient, getCurrentUser } from '@/lib/supabase/cached'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const supabase = await getSupabaseClient()
 
-  const { data: membership } = await supabase
-    .from('family_members')
-    .select('*, family_groups(*)')
-    .eq('user_id', user.id)
-    .single()
+  // Fetch profile and membership in parallel (was sequential before)
+  const [{ data: profile }, { data: membership }] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('family_members').select('*, family_groups(*)').eq('user_id', user.id).single(),
+  ])
 
   const group = membership?.family_groups as { id: string; name: string; created_by: string; invite_code: string; created_at: string } | null
 
