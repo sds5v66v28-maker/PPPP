@@ -14,18 +14,20 @@ export default async function CalendarPage() {
 
   const groupId = await ensureGroup(supabase, user.id)
 
-  const [{ data: events }, { data: tasks }, { data: members }] = await Promise.all([
-    supabase.from('events').select('*').eq('group_id', groupId).order('start_time'),
-    supabase.from('tasks').select('*').eq('group_id', groupId).order('due_date'),
-    supabase.from('family_members').select('*').eq('group_id', groupId),
-  ])
+  const [events, tasks, members] = groupId
+    ? await Promise.all([
+        supabase.from('events').select('*').eq('group_id', groupId).order('start_time').then(r => r.data),
+        supabase.from('tasks').select('*').eq('group_id', groupId).order('due_date').then(r => r.data),
+        supabase.from('family_members').select('*').eq('group_id', groupId).then(r => r.data),
+      ])
+    : [[], [], []]
 
   return (
     <div className="h-full flex flex-col">
       <CalendarView
         initialEvents={(events as Event[]) || []}
         initialTasks={(tasks as Task[]) || []}
-        groupId={groupId}
+        groupId={groupId ?? ''}
         currentUserId={user.id}
         members={(members as FamilyMember[]) || []}
       />

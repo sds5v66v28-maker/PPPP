@@ -14,21 +14,24 @@ export default async function TasksPage() {
 
   const groupId = await ensureGroup(supabase, user.id)
 
-  const [{ data: tasks }, { data: members }] = await Promise.all([
-    supabase
-      .from('tasks')
-      .select('*')
-      .eq('group_id', groupId)
-      .order('due_date', { ascending: true })
-      .order('created_at', { ascending: false }),
-    supabase.from('family_members').select('*').eq('group_id', groupId),
-  ])
+  const [tasks, members] = groupId
+    ? await Promise.all([
+        supabase
+          .from('tasks')
+          .select('*')
+          .eq('group_id', groupId)
+          .order('due_date', { ascending: true })
+          .order('created_at', { ascending: false })
+          .then(r => r.data),
+        supabase.from('family_members').select('*').eq('group_id', groupId).then(r => r.data),
+      ])
+    : [[], []]
 
   return (
     <div className="h-full flex flex-col">
       <TaskList
         initialTasks={(tasks as Task[]) || []}
-        groupId={groupId}
+        groupId={groupId ?? ''}
         currentUserId={user.id}
         members={(members as FamilyMember[]) || []}
       />
