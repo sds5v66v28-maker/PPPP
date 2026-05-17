@@ -319,7 +319,8 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
       {/* FAB on mobile */}
       <button
         onClick={() => { setEditingTask(null); setShowForm(true) }}
-        className="sm:hidden fixed bottom-20 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-colors"
+        className="sm:hidden fixed right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-colors"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 72px)' }}
       >
         <PlusIcon className="w-6 h-6" />
       </button>

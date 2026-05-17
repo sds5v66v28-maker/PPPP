@@ -134,31 +134,34 @@ export default function Navigation({ profile, group }: NavigationProps) {
         </div>
       </aside>
 
-      {/* Bottom nav - mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 flex">
+      {/* Bottom nav - mobile (icons only + safe area) */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 flex"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
             <Link
               key={href}
               href={href}
-              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-1 text-xs font-medium transition-colors ${
+              aria-label={label}
+              className={`flex-1 flex items-center justify-center py-3 transition-colors ${
                 active
                   ? 'text-blue-600 dark:text-blue-400'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              {label}
+              <Icon className="w-6 h-6" />
             </Link>
           )
         })}
         <button
           onClick={toggleDark}
-          className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 text-xs font-medium text-gray-500 dark:text-gray-400"
+          aria-label={dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
+          className="flex-1 flex items-center justify-center py-3 text-gray-500 dark:text-gray-400"
         >
-          {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-          {dark ? '明るい' : '暗い'}
+          {dark ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
         </button>
       </nav>
     </>

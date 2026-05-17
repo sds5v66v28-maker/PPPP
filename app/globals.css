@@ -17,3 +17,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Mobile: pad content above the bottom tab bar + iPhone home indicator */
+.app-main {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 56px);
+}
+
+@media (min-width: 768px) {
+  .app-main {
+    padding-bottom: 0;
+  }
+}
