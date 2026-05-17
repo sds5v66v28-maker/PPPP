@@ -27,7 +27,6 @@ export default function SettingsPage() {
   const [groupName, setGroupName] = useState('')
 
   const [newGroupName, setNewGroupName] = useState('')
-  const [inviteCode, setInviteCode] = useState('')
   const [joinCode, setJoinCode] = useState('')
 
   const [copied, setCopied] = useState(false)
@@ -80,8 +79,8 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    void fetchData() // eslint-disable-line react-hooks/set-state-in-effect
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const showSuccess = (msg: string) => {
     setSuccessMsg(msg)

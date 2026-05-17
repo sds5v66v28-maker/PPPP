@@ -27,15 +27,15 @@ export default function Navigation({ profile, group }: NavigationProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const stored = localStorage.getItem('theme')
+    return stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  })
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const isDark = stored === 'dark' || (!stored && prefersDark)
-    setDark(isDark)
-    document.documentElement.classList.toggle('dark', isDark)
-  }, [])
+    document.documentElement.classList.toggle('dark', dark)
+  }, [dark])
 
   const toggleDark = () => {
     const next = !dark

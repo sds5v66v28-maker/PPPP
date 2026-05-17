@@ -47,7 +47,6 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [modalEvent, setModalEvent] = useState<Event | null | undefined>(undefined) // undefined = closed, null = new
   const [defaultDate, setDefaultDate] = useState<Date | undefined>()
-  const [defaultHour, setDefaultHour] = useState<number | undefined>()
   const supabase = createClient()
 
   const fetchData = async () => {
@@ -71,7 +70,6 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
 
   const handleDayClick = (date: Date) => {
     setDefaultDate(date)
-    setDefaultHour(undefined)
     setModalEvent(null)
   }
 
@@ -79,7 +77,6 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
     const d = new Date(date)
     d.setHours(hour, 0, 0, 0)
     setDefaultDate(d)
-    setDefaultHour(hour)
     setModalEvent(null)
   }
 
@@ -94,7 +91,6 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
   const handleModalClose = () => {
     setModalEvent(undefined)
     setDefaultDate(undefined)
-    setDefaultHour(undefined)
   }
 
   const handleModalSaved = () => {

@@ -76,7 +76,7 @@ export default function CommentSection({ entityType, entityId, currentUserId }: 
   }
 
   useEffect(() => {
-    fetchData()
+    void fetchData() // eslint-disable-line react-hooks/set-state-in-effect
 
     const channel = supabase
       .channel(`comments-${entityId}`)
