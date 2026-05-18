@@ -1,47 +1,61 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import CalendarView from '@/components/calendar/CalendarView'
-import { getSupabaseClient, getCurrentUser, getGroupId } from '@/lib/supabase/cached'
+import CalendarLoading from './loading'
 import type { Event, Task, FamilyMember } from '@/types'
 
-export default async function CalendarPage() {
-  const user = await getCurrentUser()
-  if (!user) redirect('/login')
+export default function CalendarPage() {
+  const router = useRouter()
+  const [ready, setReady] = useState(false)
+  const [groupId, setGroupId] = useState('')
+  const [userId, setUserId] = useState('')
+  const [events, setEvents] = useState<Event[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [members, setMembers] = useState<FamilyMember[]>([])
 
-  // Both calls reuse the cached results from layout — no extra DB round trips
-  const [groupId, supabase] = await Promise.all([
-    getGroupId(user.id),
-    getSupabaseClient(),
-  ])
+  useEffect(() => {
+    const init = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.replace('/login'); return }
 
-  // Limit events to ±2 months around today to reduce payload
-  const now = new Date()
-  const rangeStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString()
-  const rangeEnd   = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString()
+      const { data: membership } = await supabase
+        .from('family_members')
+        .select('group_id')
+        .eq('user_id', user.id)
+        .single()
 
-  const [events, tasks, members] = groupId
-    ? await Promise.all([
-        supabase.from('events').select('*').eq('group_id', groupId)
-          .gte('start_time', rangeStart)
-          .lte('start_time', rangeEnd)
-          .order('start_time')
-          .then(r => r.data),
-        supabase.from('tasks').select('*').eq('group_id', groupId)
-          .order('due_date')
-          .then(r => r.data),
-        supabase.from('family_members').select('*').eq('group_id', groupId)
-          .then(r => r.data),
+      if (!membership?.group_id) return
+      const gId = membership.group_id
+
+      const [eventsRes, tasksRes, membersRes] = await Promise.all([
+        supabase.from('events').select('*').eq('group_id', gId).order('start_time'),
+        supabase.from('tasks').select('*').eq('group_id', gId).order('due_date'),
+        supabase.from('family_members').select('*').eq('group_id', gId),
       ])
-    : [[], [], []]
+
+      setGroupId(gId)
+      setUserId(user.id)
+      setEvents(eventsRes.data || [])
+      setTasks(tasksRes.data || [])
+      setMembers(membersRes.data || [])
+      setReady(true)
+    }
+    init()
+  }, [router])
+
+  if (!ready) return <CalendarLoading />
 
   return (
-    <div className="h-full flex flex-col">
-      <CalendarView
-        initialEvents={(events as Event[]) || []}
-        initialTasks={(tasks as Task[]) || []}
-        groupId={groupId ?? ''}
-        currentUserId={user.id}
-        members={(members as FamilyMember[]) || []}
-      />
-    </div>
+    <CalendarView
+      initialEvents={events}
+      initialTasks={tasks}
+      groupId={groupId}
+      currentUserId={userId}
+      members={members}
+    />
   )
 }
