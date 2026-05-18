@@ -59,6 +59,7 @@ export default function TaskForm({ task, groupId, currentUserId, members, existi
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(task?.recurrence_end_date || '')
   const [showAdvanced, setShowAdvanced] = useState(isEditing)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     const parsed = parseTaskInput(smartInput)
@@ -72,9 +73,13 @@ export default function TaskForm({ task, groupId, currentUserId, members, existi
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    const titleToSave = parsedTitle.trim() || smartInput.trim()
+    // Recompute from source every time — avoids stale parsedTitle state
+    const { title: freshTitle } = parseTaskInput(smartInput)
+    const titleToSave = (freshTitle || smartInput).trim()
     if (!titleToSave) return
+
     setSaving(true)
+    setSaveError(null)
 
     const payload = {
       title: titleToSave,
@@ -90,10 +95,14 @@ export default function TaskForm({ task, groupId, currentUserId, members, existi
       created_by: currentUserId,
     }
 
-    if (isEditing && task) {
-      await supabase.from('tasks').update(payload).eq('id', task.id)
-    } else {
-      await supabase.from('tasks').insert(payload)
+    const { error } = isEditing && task
+      ? await supabase.from('tasks').update(payload).eq('id', task.id)
+      : await supabase.from('tasks').insert(payload)
+
+    if (error) {
+      setSaveError(error.message)
+      setSaving(false)
+      return
     }
 
     setSaving(false)
@@ -294,6 +303,12 @@ export default function TaskForm({ task, groupId, currentUserId, members, existi
                   className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
+            </div>
+          )}
+
+          {saveError && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+              保存に失敗しました: {saveError}
             </div>
           )}
 

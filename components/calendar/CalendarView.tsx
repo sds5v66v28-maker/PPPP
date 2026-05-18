@@ -7,6 +7,7 @@ import MonthView from './MonthView'
 import WeekView from './WeekView'
 import DayView from './DayView'
 import EventModal from './EventModal'
+import DayDetailPanel from './DayDetailPanel'
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'lucide-react'
 
 interface CalendarViewProps {
@@ -47,6 +48,8 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [modalEvent, setModalEvent] = useState<Event | null | undefined>(undefined) // undefined = closed, null = new
   const [defaultDate, setDefaultDate] = useState<Date | undefined>()
+  const [defaultEndDate, setDefaultEndDate] = useState<Date | undefined>()
+  const [detailDate, setDetailDate] = useState<Date | null>(null)
   const supabase = createClient()
 
   const fetchData = async () => {
@@ -68,8 +71,24 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
     return () => { supabase.removeChannel(channel) }
   }, [groupId])
 
-  const handleDayClick = (date: Date) => {
+  // Single tap on month cell → show day detail
+  const handleDayDetail = (date: Date) => {
+    setDetailDate(date)
+  }
+
+  // Double tap on month cell / slot click → create new event
+  const handleDayCreate = (date: Date) => {
+    setDetailDate(null)
     setDefaultDate(date)
+    setDefaultEndDate(undefined)
+    setModalEvent(null)
+  }
+
+  // Drag across multiple days → create event with range
+  const handleRangeCreate = (start: Date, end: Date) => {
+    setDetailDate(null)
+    setDefaultDate(start)
+    setDefaultEndDate(end)
     setModalEvent(null)
   }
 
@@ -77,20 +96,21 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
     const d = new Date(date)
     d.setHours(hour, 0, 0, 0)
     setDefaultDate(d)
+    setDefaultEndDate(undefined)
     setModalEvent(null)
   }
 
   const handleEventClick = (event: Event) => {
+    setDetailDate(null)
     setModalEvent(event)
   }
 
-  const handleTaskClick = () => {
-    // Could open task modal - for now just navigate to tasks
-  }
+  const handleTaskClick = () => {}
 
   const handleModalClose = () => {
     setModalEvent(undefined)
     setDefaultDate(undefined)
+    setDefaultEndDate(undefined)
   }
 
   const handleModalSaved = () => {
@@ -171,7 +191,9 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
             currentDate={currentDate}
             events={events}
             tasks={tasks}
-            onDayClick={handleDayClick}
+            onDayDetail={handleDayDetail}
+            onDayCreate={handleDayCreate}
+            onRangeCreate={handleRangeCreate}
             onEventClick={handleEventClick}
             onTaskClick={handleTaskClick}
           />
@@ -207,11 +229,24 @@ export default function CalendarView({ initialEvents, initialTasks, groupId, cur
         <PlusIcon className="w-6 h-6" />
       </button>
 
+      {/* Day Detail Panel (month view single tap) */}
+      {detailDate && (
+        <DayDetailPanel
+          date={detailDate}
+          events={events}
+          tasks={tasks}
+          onClose={() => setDetailDate(null)}
+          onCreateEvent={handleDayCreate}
+          onEventClick={handleEventClick}
+        />
+      )}
+
       {/* Event Modal */}
       {modalEvent !== undefined && (
         <EventModal
           event={modalEvent}
           defaultDate={defaultDate}
+          defaultEndDate={defaultEndDate}
           groupId={groupId}
           currentUserId={currentUserId}
           members={members}

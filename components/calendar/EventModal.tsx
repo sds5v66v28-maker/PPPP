@@ -14,6 +14,7 @@ const COLORS = [
 interface EventModalProps {
   event: Event | null
   defaultDate?: Date
+  defaultEndDate?: Date
   groupId: string
   currentUserId: string
   members: FamilyMember[]
@@ -24,6 +25,7 @@ interface EventModalProps {
 export default function EventModal({
   event,
   defaultDate,
+  defaultEndDate,
   groupId,
   currentUserId,
   members,
@@ -36,8 +38,9 @@ export default function EventModal({
 
   const defaultStart = defaultDate ? new Date(defaultDate) : new Date()
   defaultStart.setMinutes(0, 0, 0)
-  const defaultEnd = new Date(defaultStart)
-  defaultEnd.setHours(defaultStart.getHours() + 1)
+  const defaultEnd = defaultEndDate
+    ? (() => { const d = new Date(defaultEndDate); d.setHours(23, 59, 0, 0); return d })()
+    : (() => { const d = new Date(defaultStart); d.setHours(defaultStart.getHours() + 1); return d })()
 
   const [title, setTitle] = useState(event?.title || '')
   const [description, setDescription] = useState(event?.description || '')
