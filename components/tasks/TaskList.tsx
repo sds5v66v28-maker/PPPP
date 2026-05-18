@@ -28,7 +28,7 @@ export default function TaskList({ initialTasks, groupId, currentUserId, members
   const [detailTask, setDetailTask] = useState<Task | null>(null)
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all')
   const [filterAssignee, setFilterAssignee] = useState('')
-  const [showCompleted, setShowCompleted] = useState(false)
+  const [showCompleted, setShowCompleted] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('date')
   const supabase = createClient()
 

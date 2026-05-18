@@ -156,13 +156,6 @@ export default function Navigation({ profile, group }: NavigationProps) {
             </Link>
           )
         })}
-        <button
-          onClick={toggleDark}
-          aria-label={dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
-          className="flex-1 flex items-center justify-center py-3 text-gray-500 dark:text-gray-400"
-        >
-          {dark ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-        </button>
       </nav>
     </>
   )

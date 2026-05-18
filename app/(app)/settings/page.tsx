@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FamilyGroup, FamilyMember } from '@/types'
-import { CopyIcon, CheckIcon, PlusIcon, LogInIcon, TrashIcon } from 'lucide-react'
+import { CopyIcon, CheckIcon, PlusIcon, LogInIcon, TrashIcon, SunIcon, MoonIcon } from 'lucide-react'
 
 const COLORS = [
   '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
@@ -36,6 +36,11 @@ export default function SettingsPage() {
   const [joiningGroup, setJoiningGroup] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const stored = localStorage.getItem('theme')
+    return stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  })
 
   const supabase = createClient()
 
@@ -81,6 +86,13 @@ export default function SettingsPage() {
   useEffect(() => {
     void fetchData() // eslint-disable-line react-hooks/set-state-in-effect
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleDark = () => {
+    const next = !dark
+    setDark(next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+    document.documentElement.classList.toggle('dark', next)
+  }
 
   const showSuccess = (msg: string) => {
     setSuccessMsg(msg)
@@ -201,7 +213,31 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">設定</h1>
 
-      {/* Notifications */}
+      {/* Theme */}
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">テーマ</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {dark ? <MoonIcon className="w-5 h-5 text-blue-500" /> : <SunIcon className="w-5 h-5 text-yellow-500" />}
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {dark ? 'ダークモード' : 'ライトモード'}
+            </span>
+          </div>
+          <button
+            onClick={toggleDark}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              dark ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                dark ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </section>
+
       {error && (
         <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
           {error}
