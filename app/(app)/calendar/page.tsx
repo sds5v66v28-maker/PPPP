@@ -1,76 +1,34 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/components/AuthProvider'
+import { redirect } from 'next/navigation'
 import CalendarView from '@/components/calendar/CalendarView'
-import CalendarLoading from './loading'
+import { getSupabaseClient, getCurrentUser, getGroupId } from '@/lib/supabase/cached'
 import type { Event, Task, FamilyMember } from '@/types'
 
-export default function CalendarPage() {
-  const { userId, groupId } = useAuth()
-  const [ready, setReady] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [events, setEvents] = useState<Event[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [members, setMembers] = useState<FamilyMember[]>([])
+export default async function CalendarPage() {
+  const user = await getCurrentUser()
+  if (!user) redirect('/login')
 
-  const load = useCallback(async () => {
-    setError(null)
-    try {
-      const supabase = createClient()
-      const [eventsRes, tasksRes, membersRes] = await Promise.all([
-        supabase.from('events').select('*').eq('group_id', groupId).order('start_time'),
-        supabase.from('tasks').select('*').eq('group_id', groupId).order('due_date'),
-        supabase.from('family_members').select('*').eq('group_id', groupId),
+  const [groupId, supabase] = await Promise.all([
+    getGroupId(user.id),
+    getSupabaseClient(),
+  ])
+
+  const [events, tasks, members] = groupId
+    ? await Promise.all([
+        supabase.from('events').select('*').eq('group_id', groupId).order('start_time').then(r => r.data),
+        supabase.from('tasks').select('*').eq('group_id', groupId).order('due_date').then(r => r.data),
+        supabase.from('family_members').select('*').eq('group_id', groupId).then(r => r.data),
       ])
-      if (eventsRes.error) throw eventsRes.error
-      setEvents(eventsRes.data || [])
-      setTasks(tasksRes.data || [])
-      setMembers(membersRes.data || [])
-      setReady(true)
-    } catch (err) {
-      console.error('CalendarPage load error:', err)
-      setError('データの読み込みに失敗しました。')
-    }
-  }, [groupId])
-
-  useEffect(() => {
-    if (groupId) load()
-  }, [groupId, load])
-
-  if (!groupId) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-500 dark:text-gray-400">
-        <p className="text-sm">グループの設定に失敗しました。</p>
-        <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">再読み込み</button>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-500 dark:text-gray-400">
-        <p className="text-sm">{error}</p>
-        <button
-          onClick={load}
-          className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
-        >
-          再試行
-        </button>
-      </div>
-    )
-  }
-
-  if (!ready) return <CalendarLoading />
+    : [[], [], []]
 
   return (
-    <CalendarView
-      initialEvents={events}
-      initialTasks={tasks}
-      groupId={groupId}
-      currentUserId={userId}
-      members={members}
-    />
+    <div className="h-full flex flex-col">
+      <CalendarView
+        initialEvents={(events as Event[]) || []}
+        initialTasks={(tasks as Task[]) || []}
+        groupId={groupId ?? ''}
+        currentUserId={user.id}
+        members={(members as FamilyMember[]) || []}
+      />
+    </div>
   )
 }

@@ -7,6 +7,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import type { Profile, FamilyGroup } from '@/types'
 
+interface NavigationProps {
+  profile: Profile | null
+  group: FamilyGroup | null | undefined
+}
+
 const COLORS = [
   '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
   '#8B5CF6', '#EC4899', '#06B6D4', '#F97316',
@@ -18,12 +23,10 @@ function getInitials(name: string | null | undefined, email: string | undefined)
   return '?'
 }
 
-export default function Navigation() {
+export default function Navigation({ profile, group }: NavigationProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [group, setGroup] = useState<FamilyGroup | null>(null)
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false
     const stored = localStorage.getItem('theme')
@@ -33,22 +36,6 @@ export default function Navigation() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
   }, [dark])
-
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const [profileRes, membershipRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('family_members').select('*, family_groups(*)').eq('user_id', user.id).single(),
-      ])
-      if (profileRes.data) setProfile(profileRes.data)
-      if (membershipRes.data?.family_groups) {
-        setGroup(membershipRes.data.family_groups as unknown as FamilyGroup)
-      }
-    }
-    load()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleDark = () => {
     const next = !dark
@@ -76,7 +63,6 @@ export default function Navigation() {
     <>
       {/* Sidebar - desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0">
-        {/* Logo */}
         <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-lg">🏠</div>
@@ -89,7 +75,6 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Nav items */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href)
@@ -110,7 +95,6 @@ export default function Navigation() {
           })}
         </nav>
 
-        {/* Bottom section */}
         <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700 space-y-1">
           <button
             onClick={toggleDark}
@@ -127,7 +111,6 @@ export default function Navigation() {
             ログアウト
           </button>
 
-          {/* User avatar */}
           <div className="flex items-center gap-3 px-3 py-2.5 mt-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
@@ -137,10 +120,10 @@ export default function Navigation() {
             </div>
             <div className="min-w-0">
               <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {profile?.full_name || '…'}
+                {profile?.full_name || 'User'}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {profile?.email || ''}
+                {profile?.email}
               </div>
             </div>
           </div>
