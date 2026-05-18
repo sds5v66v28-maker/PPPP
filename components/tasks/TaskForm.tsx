@@ -73,34 +73,51 @@ export default function TaskForm({ task, groupId, currentUserId, members, existi
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Recompute from source every time — avoids stale parsedTitle state
     const { title: freshTitle } = parseTaskInput(smartInput)
     const titleToSave = (freshTitle || smartInput).trim()
-    if (!titleToSave) return
+    if (!titleToSave) {
+      setSaveError('タイトルを入力してください')
+      return
+    }
 
     setSaving(true)
     setSaveError(null)
 
-    const payload = {
-      title: titleToSave,
-      description: description.trim() || null,
-      due_date: dueDate || null,
-      due_time: dueTime || null,
-      section: section.trim() || null,
-      priority,
-      assigned_to: assignedTo || null,
-      recurrence,
-      recurrence_end_date: recurrenceEndDate || null,
-      group_id: groupId,
-      created_by: currentUserId,
-    }
+    try {
+      const sectionVal = section.trim() || null
+      const dueTimeVal = dueTime || null
 
-    const { error } = isEditing && task
-      ? await supabase.from('tasks').update(payload).eq('id', task.id)
-      : await supabase.from('tasks').insert(payload)
+      const base = {
+        title: titleToSave,
+        description: description.trim() || null,
+        due_date: dueDate || null,
+        priority,
+        assigned_to: assignedTo || null,
+        recurrence,
+        recurrence_end_date: recurrenceEndDate || null,
+        group_id: groupId,
+        created_by: currentUserId,
+      }
+      // Include new columns only when they have values to avoid errors if migration hasn't run
+      const payload = {
+        ...base,
+        ...(dueTimeVal !== null ? { due_time: dueTimeVal } : {}),
+        ...(sectionVal !== null ? { section: sectionVal } : {}),
+      }
 
-    if (error) {
-      setSaveError(error.message)
+      const { error } = isEditing && task
+        ? await supabase.from('tasks').update({ ...base, due_time: dueTimeVal, section: sectionVal }).eq('id', task.id)
+        : await supabase.from('tasks').insert(payload)
+
+      if (error) {
+        console.error('Task save error:', error)
+        setSaveError(error.message)
+        setSaving(false)
+        return
+      }
+    } catch (err) {
+      console.error('Task save unexpected error:', err)
+      setSaveError(err instanceof Error ? err.message : '予期しないエラーが発生しました')
       setSaving(false)
       return
     }
