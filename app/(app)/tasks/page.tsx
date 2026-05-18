@@ -38,6 +38,15 @@ export default function TasksPage() {
     if (groupId) load()
   }, [groupId, load])
 
+  if (!groupId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-500 dark:text-gray-400">
+        <p className="text-sm">グループの設定に失敗しました。</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">再読み込み</button>
+      </div>
+    )
+  }
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-500 dark:text-gray-400">

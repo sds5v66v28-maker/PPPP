@@ -11,10 +11,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await getSupabaseClient()
   const groupId = await ensureGroup(supabase, user.id)
 
-  if (!groupId) redirect('/login')
-
   return (
-    <AuthProvider userId={user.id} groupId={groupId}>
+    <AuthProvider userId={user.id} groupId={groupId ?? ''}>
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation />
         <main className="flex-1 overflow-auto app-main">
